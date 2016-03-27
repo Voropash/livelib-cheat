@@ -1,0 +1,81 @@
+#!/usr/bin/python
+import os
+import sys
+import subprocess
+import random
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
+def main(argv):
+    
+    login = argv[1]
+    password = argv[2]
+	
+    while 1:
+        try:
+            ff_prof=webdriver.FirefoxProfile()
+            #set some privacy settings
+            ff_prof.set_preference( "places.history.enabled", False )
+            ff_prof.set_preference( "privacy.clearOnShutdown.offlineApps", True )
+            ff_prof.set_preference( "privacy.clearOnShutdown.passwords", True )
+            ff_prof.set_preference( "privacy.clearOnShutdown.siteSettings", True )
+            ff_prof.set_preference( "privacy.sanitize.sanitizeOnShutdown", True )
+            ff_prof.set_preference( "signon.rememberSignons", False )
+            ff_prof.set_preference( "network.cookie.lifetimePolicy", 2 )
+            ff_prof.set_preference( "network.dns.disablePrefetch", True )
+            ff_prof.set_preference( "network.http.sendRefererHeader", 0 )
+            #set socks proxy
+            ff_prof.set_preference( "network.proxy.type", 1 )
+            ff_prof.set_preference( "network.proxy.socks_version", 5 )
+            ff_prof.set_preference( "network.proxy.socks", '127.0.0.1' )
+            ff_prof.set_preference( "network.proxy.socks_port", 9150 )
+            ff_prof.set_preference( "network.proxy.socks_remote_dns", True )
+            #get a huge speed increase by not downloading images
+            ff_prof.set_preference( "permissions.default.image", 2 )
+            # programmatically start tor (in windows environment)
+            tor_path = "C:\\Users\\vorop\\Desktop\\Tor Browser\\Browser\\" #tor.exe
+            torrc_path = "C:\\Users\\vorop\\Desktop\\Tor Browser\\Browser\\torrc"
+            #DETACHED_PROCESS = 0x00000008
+            #calling as a detached_process means the program will not die with your python program - you will need to manually kill it
+            ##
+            # somebody please let me know if there's a way to make this a child process that automatically dies (in windows)
+            ##
+            tor_process = subprocess.Popen( '"' + tor_path+'firefox.exe" --nt-service "-f" "' + torrc_path + '"' )
+            driver = webdriver.Firefox(ff_prof)
+
+
+            #login and like
+
+            driver.get("http://www.livelib.ru")
+            driver.find_element_by_class_name("avatar-border").click()
+
+            input = driver.find_element_by_id("form-login-data").find_elements_by_css_selector("input");
+            
+            input[0].send_keys(login)
+            input[1].send_keys(password)
+
+            driver.find_element_by_id("user[submit]").click()
+
+            driver.get("http://www.livelib.ru/reader/artmordent/reviews")
+            elementsByClassName = driver.find_elements_by_class_name("i-vote")
+
+            for item in elementsByClassName:
+                item.click()
+
+            driver.get("http://www.livelib.ru/reader/artmordent/selections")
+
+            elementsByClassName = driver.find_elements_by_class_name("i-vote")
+            for item in elementsByClassName:
+                item.click()
+                
+
+            elementsByClassName = driver.find_elements_by_class_name("i-fav")
+            for item in elementsByClassName:
+                item.click()
+            driver.close()
+            sys.exit()
+        except:
+            log = 'error'
+        
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
